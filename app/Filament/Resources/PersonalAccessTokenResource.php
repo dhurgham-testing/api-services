@@ -19,7 +19,7 @@ class PersonalAccessTokenResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-key';
 
-    protected static ?string $navigationGroup = 'Users & Auth';
+    protected static ?string $navigationGroup = 'API';
 
     protected static ?string $navigationLabel = 'API Tokens';
 

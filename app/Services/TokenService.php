@@ -7,6 +7,10 @@ use App\Models\PersonalAccessToken;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
+/**
+ * Service for managing personal access tokens
+ * Handles creation and management of API tokens with abilities
+ */
 class TokenService
 {
     /**
