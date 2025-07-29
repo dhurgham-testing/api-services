@@ -39,6 +39,9 @@ This project is an **API Services Management Platform** that provides:
 - **Service grouping**: Organize routes by service (YouTube, Spotify, etc.)
 - **Active/Inactive states**: Enable/disable routes without deletion
 - **HTTP method support**: GET, POST, PUT, PATCH, DELETE
+- **Smart Form Validation**: Progressive form fields with dependency validation
+- **Controller Auto-Discovery**: Dynamic controller detection from file system
+- **Method Auto-Discovery**: Automatic method detection from controller classes
 
 ### ✅ Service Integrations
 - **YouTube Downloader**: Search, convert to MP3/MP4, get video info
@@ -50,6 +53,9 @@ This project is an **API Services Management Platform** that provides:
 - **Service Monitoring**: View active routes and their status
 - **Test Functionality**: Test routes directly from admin panel
 - **Bulk Operations**: Manage multiple routes at once
+- **Smart Form Fields**: Progressive form with dependency-based field enabling
+- **Controller Search**: Searchable dropdown for available controllers
+- **Method Auto-Population**: Automatic method detection from selected controllers
 
 ### ✅ API Gateway
 - **Unified Endpoints**: All services accessible through `/api/{service}/` prefix
@@ -139,10 +145,10 @@ api-services/
    - Go to "API Routes" section
    - Click "Create" to add new routes
    - Configure route parameters:
-     - Service Group (e.g., `youtube`)
-     - Route Name (e.g., `search`)
-     - Controller Name (e.g., `YouTubeDownloaderController`)
-     - Method Name (e.g., `search`)
+     - Service Group (e.g., `youtube`) - Required first
+     - Controller Name - Searchable dropdown with available controllers
+     - Route Name (e.g., `search`) - Enabled after controller selection
+     - Method Name - Auto-populated from selected controller
      - HTTP Method (e.g., `POST`)
 
 3. **Service Management**
@@ -228,11 +234,14 @@ Each service can be configured through the admin interface:
 ## 🎨 Admin Interface Features
 
 ### Route Management
-- ✅ **List View**: All routes with filters and search
+- ✅ **List View**: All routes with simplified columns and filters
 - ✅ **Create/Edit**: Add new routes or modify existing ones
 - ✅ **Bulk Actions**: Delete multiple routes
 - ✅ **Test Routes**: Test endpoints directly from admin
 - ✅ **Status Monitoring**: Active/inactive route status
+- ✅ **Smart Form Validation**: Progressive form with dependency validation
+- ✅ **Controller Auto-Discovery**: Dynamic controller detection
+- ✅ **Method Auto-Population**: Automatic method detection from controllers
 
 ### Service Overview
 - ✅ **Service List**: View all available services
@@ -249,6 +258,9 @@ Each service can be configured through the admin interface:
 3. **Controller Resolution**: Dynamic controller class loading
 4. **Route Registration**: Laravel Route facade registration
 5. **Error Handling**: Graceful handling of missing controllers
+6. **Form Validation**: Progressive form with dependency-based field enabling
+7. **Controller Discovery**: File system scanning for available controllers
+8. **Method Detection**: Reflection-based method discovery from controller classes
 
 ### Route Configuration
 
@@ -266,6 +278,17 @@ ApiRoute::create([
 ```
 
 ## 🚀 Adding New Services
+
+### Recent Improvements (Latest Update)
+
+The API Route management system has been enhanced with:
+
+- **Progressive Form Validation**: Fields are enabled/disabled based on dependencies
+- **Controller Auto-Discovery**: Dynamic detection of available controllers from file system
+- **Searchable Controller Selection**: Dropdown with search functionality for controller names
+- **Method Auto-Population**: Automatic detection of available methods from selected controllers
+- **Simplified Table View**: Cleaner table columns with essential information
+- **Dependency-Based Validation**: Form fields are progressively enabled as dependencies are met
 
 ### 1. Create Service Controller
 
@@ -290,11 +313,11 @@ class SpotifyController extends Controller
 
 1. Go to "API Routes" in admin panel
 2. Click "Create"
-3. Fill in service details:
-   - Service Group: `spotify`
-   - Route Name: `play`
-   - Controller Name: `SpotifyController`
-   - Method Name: `play`
+3. Fill in service details (progressive form):
+   - Service Group: `spotify` (required first)
+   - Controller Name: Select from available controllers (searchable dropdown)
+   - Route Name: `play` (enabled after controller selection)
+   - Method Name: Auto-populated from selected controller
    - HTTP Method: `POST`
 
 ### 3. Routes Automatically Available

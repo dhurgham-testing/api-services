@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('method_name');
             $table->enum('http_method', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])->default('POST');
             $table->boolean('is_active')->default(true);
-            $table->boolean('is_default')->default(false);
-            $table->json('data')->nullable();
             $table->timestamps();
         });
     }
@@ -32,4 +30,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('api_routes');
     }
-}; 
+};

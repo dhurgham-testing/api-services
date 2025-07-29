@@ -29,24 +29,83 @@ class ApiRouteResource extends Resource
                 Forms\Components\TextInput::make('service_group')
                     ->required()
                     ->maxLength(255)
-                    ->label('Service Group (e.g., youtube, spotify)'),
+                    ->label('Service Group (e.g., youtube, spotify)')
+                    ->live(onBlur: true),
+
+                Forms\Components\Select::make('controller_name')
+                    ->required()
+                    ->disabled(fn($get) => !$get('service_group'))
+                    ->label('Controller Name')
+                    ->options(function ($get) {
+                        $service_group = $get('service_group');
+
+                        if (!$service_group) {
+                            return [];
+                        }
+
+                        $controllers = [];
+                        $base_path = app_path("Http/Api/" . ucfirst($service_group) . "/Controllers");
+
+                        if (is_dir($base_path)) {
+                            $files = glob($base_path . "/*Controller.php");
+                            foreach ($files as $file) {
+                                $filename = basename($file, '.php');
+                                $controllers[$filename] = $filename;
+                            }
+                        }
+
+                        return $controllers;
+                    })
+                    ->searchable()
+                    ->placeholder('Select a controller...')
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function ($state, $set) {
+                        $set('method_name', '');
+                    }),
 
                 Forms\Components\TextInput::make('route_name')
                     ->required()
+                    ->disabled(fn($get) => !$get('controller_name'))
                     ->maxLength(255)
                     ->label('Route Name (e.g., search, convert-to-mp3)'),
 
-                Forms\Components\TextInput::make('controller_name')
+                Forms\Components\Select::make('method_name')
                     ->required()
-                    ->maxLength(255)
-                    ->label('Controller Name (e.g., YouTubeDownloaderController)'),
+                    ->disabled(fn($get) => !$get('controller_name'))
+                    ->label('Method Name')
+                    ->options(function ($get) {
+                        $controller_name = $get('controller_name');
+                        $service_group = $get('service_group');
 
-                Forms\Components\TextInput::make('method_name')
-                    ->required()
-                    ->maxLength(255)
-                    ->label('Method Name (e.g., search, convertToMp3)'),
+                        if (!$controller_name || !$service_group) {
+                            return [];
+                        }
 
-                Forms\Components\Select::make('http_method')
+
+                        $controller_class = "App\\Http\\Api\\" . ucfirst($service_group) . "\\Controllers\\{$controller_name}";
+
+                        if (!class_exists($controller_class)) {
+                            return [];
+                        }
+
+                        try {
+                            $reflection = new \ReflectionClass($controller_class);
+
+                            $public_methods = collect($reflection->getMethods(\ReflectionMethod::IS_PUBLIC))
+                                ->filter(function ($method) use ($controller_class) {
+                                    return $method->class === $controller_class && !$method->isConstructor();
+                                })
+                                ->mapWithKeys(fn($method) => [$method->getName() => $method->getName()]);
+
+                            return $public_methods->toArray();
+                        } catch (\ReflectionException $e) {
+                            return [];
+                        }
+                    })
+                    ->searchable()
+                    ->placeholder('Select a controller first...'),
+
+        Forms\Components\Select::make('http_method')
                     ->required()
                     ->options([
                         'GET' => 'GET',
@@ -69,51 +128,33 @@ class ApiRouteResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('service_group')
                     ->sortable()
-                    ->searchable()
                     ->badge()
                     ->color('primary'),
 
-                Tables\Columns\TextColumn::make('route_name')
-                    ->sortable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('route_name'),
 
-                Tables\Columns\TextColumn::make('controller_name')
-                    ->sortable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('controller_name'),
 
-                Tables\Columns\TextColumn::make('method_name')
-                    ->sortable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('method_name'),
 
                 Tables\Columns\TextColumn::make('http_method')
                     ->badge()
                     ->color('success'),
 
                 Tables\Columns\IconColumn::make('is_active')
-                    ->boolean()
-                    ->sortable(),
+                    ->boolean(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('service_group')
-                    ->options([
-                        'youtube' => 'YouTube',
-                        'spotify' => 'Spotify',
-                        'other' => 'Other',
-                    ]),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active Status'),
-                Tables\Filters\TernaryFilter::make('is_default')
-                    ->label('Default Status'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -125,19 +166,10 @@ class ApiRouteResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListApiRoutes::route('/'),
-            'create' => Pages\CreateApiRoute::route('/create'),
-            'edit' => Pages\EditApiRoute::route('/{record}/edit'),
         ];
     }
 }
