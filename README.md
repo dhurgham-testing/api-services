@@ -67,8 +67,6 @@ api-services/
 │   │   │   ├── ApiRouteResource.php    # Route management
 │   │   │   ├── ServiceResource.php     # Service management
 │   │   │   └── UserResource.php        # User management
-│   │   └── Pages/
-│   │       └── Services.php            # Services overview page
 │   ├── Http/Api/                   # API controllers
 │   │   └── Youtube/
 │   │       └── Controllers/
