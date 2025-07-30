@@ -121,7 +121,7 @@ class ApiRouteResource extends Resource
                             return [];
                         }
 
-                        $controller_class = $service_group == "/" ? "App\\Http\\Controllers\\" . $middleware . "\\{$controller_name}" : "App\\Http\\Controllers\\" . $middleware ."\\" . ucfirst($service_group) . "\\{$controller_name}";
+                        $controller_class = $service_group == "/" ? "App\\Http\\Controllers\\" . ucfirst($middleware) . "\\{$controller_name}" : "App\\Http\\Controllers\\" . ucfirst($middleware) ."\\" . ucfirst($service_group) . "\\{$controller_name}";
                         $controller_name_parts = explode('\\', $controller_class);
                         $last_part = end($controller_name_parts);
                         $controller_class = str_replace($last_part, ucfirst($last_part), $controller_class);
