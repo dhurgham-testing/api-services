@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ApiRouteResource\Pages;
 use App\Models\ApiRoute;
+use Exception;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -26,8 +27,20 @@ class ApiRouteResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('middleware')
+                    ->required()
+                    ->label('Middleware')
+                    ->searchable()
+                    ->options([
+                        "api" => "API",
+                        "web" => "WEB",
+                    ])
+                    ->live(onBlur: true)
+                    ->placeholder('Select a middleware first...'),
+
                 Forms\Components\TextInput::make('service_group')
                     ->required()
+                    ->disabled(fn($get) => !$get('middleware'))
                     ->maxLength(255)
                     ->label('Service Group (e.g., youtube, spotify)')
                     ->live(onBlur: true),
@@ -44,7 +57,10 @@ class ApiRouteResource extends Resource
                         }
 
                         $controllers = [];
-                        $base_path = app_path("Http/Api/" . ucfirst($service_group) . "/Controllers");
+                        $middleware = $get('middleware') ?? 'api';
+                        $base_path = $service_group == "/"
+                            ? app_path("Http/Controllers/" . ucfirst($middleware))
+                            : app_path("Http/Controllers/" . ucfirst($middleware) . "/" . ucfirst($service_group));
 
                         if (is_dir($base_path)) {
                             $files = glob($base_path . "/*Controller.php");
@@ -74,6 +90,7 @@ class ApiRouteResource extends Resource
                     ->disabled(fn($get) => !$get('controller_name'))
                     ->label('Method Name')
                     ->options(function ($get) {
+                        $middleware = $get('middleware') ?? 'api';
                         $controller_name = $get('controller_name');
                         $service_group = $get('service_group');
 
@@ -81,9 +98,7 @@ class ApiRouteResource extends Resource
                             return [];
                         }
 
-
-                        $controller_class = "App\\Http\\Api\\" . ucfirst($service_group) . "\\Controllers\\{$controller_name}";
-
+                        $controller_class = $service_group == "/" ? "App\\Http\\Controllers\\" . $middleware . "\\{$controller_name}" : "App\\Http\\Controllers\\" . $middleware ."\\" . ucfirst($service_group) . "\\{$controller_name}";
                         if (!class_exists($controller_class)) {
                             return [];
                         }
@@ -93,7 +108,7 @@ class ApiRouteResource extends Resource
 
                             $public_methods = collect($reflection->getMethods(\ReflectionMethod::IS_PUBLIC))
                                 ->filter(function ($method) use ($controller_class) {
-                                    return $method->class === $controller_class && !$method->isConstructor();
+                                    return strtolower($method->class) === strtolower($controller_class) && !$method->isConstructor();
                                 })
                                 ->mapWithKeys(fn($method) => [$method->getName() => $method->getName()]);
 
@@ -122,27 +137,44 @@ class ApiRouteResource extends Resource
             ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('middleware')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'api' => 'warning',
+                        'web' => 'success',
+                        default => 'secondary',
+                    })
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('service_group')
                     ->sortable()
                     ->badge()
-                    ->color('primary'),
+                    ->color('primary')
+                    ->searchable(),
 
-                Tables\Columns\TextColumn::make('route_name'),
+                Tables\Columns\TextColumn::make('route_name')
+                    ->searchable(),
 
-                Tables\Columns\TextColumn::make('controller_name'),
+                Tables\Columns\TextColumn::make('controller_name')
+                    ->searchable(),
 
-                Tables\Columns\TextColumn::make('method_name'),
+                Tables\Columns\TextColumn::make('method_name')
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('http_method')
                     ->badge()
-                    ->color('success'),
+                    ->color('success')
+                    ->searchable(),
 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
+                Tables\Columns\ToggleColumn::make('is_active')
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

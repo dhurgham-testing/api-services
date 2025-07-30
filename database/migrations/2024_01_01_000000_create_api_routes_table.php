@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('api_routes', function (Blueprint $table) {
             $table->id();
+            $table->string('middleware');
             $table->string('service_group');
             $table->string('route_name');
             $table->string('controller_name');

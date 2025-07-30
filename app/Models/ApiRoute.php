@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ApiRoute extends Model
 {
     protected $fillable = [
+        'middleware',
         'service_group',
         'route_name',
         'controller_name',

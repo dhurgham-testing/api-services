@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Models\ApiRoute;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class DynamicRouteService
 {
     public function registerRoutes(): void
     {
-        $routes = ApiRoute::query()->where('is_active', true)->get();
+        $routes = ApiRoute::query()->get();
 
         foreach ($routes as $route) {
             $this->registerRoute($route);
@@ -21,10 +23,22 @@ class DynamicRouteService
     {
         $method = strtolower($route->http_method);
         $path = "{$route->service_group}/{$route->route_name}";
-        $controller_class = "App\\Http\\Api\\" . ucfirst($route->service_group) . "\\Controllers\\{$route->controller_name}";
+        $middleware = $route->middleware ?? 'api';
+        $controller_class = "App\\Http\\Controllers\\" . $middleware . "\\" . ucfirst($route->service_group) . "\\{$route->controller_name}";
 
         if (!class_exists($controller_class)) {
             Log::warning("Controller class not found: {$controller_class}");
+            return;
+        }
+
+        if (!$route->is_active) {
+            Route::$method($path, function () use ($route) {
+                return response()->json([
+                    'error' => 'Endpoint Unavailable',
+                    'message' => 'This endpoint is currently offline or under maintenance.',
+                    'status' => 'inactive'
+                ], ResponseAlias::HTTP_SERVICE_UNAVAILABLE);
+            });
             return;
         }
 

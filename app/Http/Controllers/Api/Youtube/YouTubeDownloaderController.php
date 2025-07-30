@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Api\Youtube\Controllers;
+namespace App\Http\Controllers\api\Youtube;
 
-use Illuminate\Http\Request;
 use App\Services\YouTubeDownloaderService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class YouTubeDownloaderController extends Controller
@@ -43,4 +43,4 @@ class YouTubeDownloaderController extends Controller
         $result = $this->downloader->getInfo($request->input('url'));
         return response()->json($result);
     }
-} 
+}
