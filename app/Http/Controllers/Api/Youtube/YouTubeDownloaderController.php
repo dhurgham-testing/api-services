@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api\Youtube;
+namespace App\Http\Controllers\Api\Youtube;
 
 use App\Services\YouTubeDownloaderService;
 use Illuminate\Http\JsonResponse;
