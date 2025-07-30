@@ -25,6 +25,9 @@ class DynamicRouteService
         $path = "{$route->service_group}/{$route->route_name}";
         $middleware = $route->middleware ?? 'api';
         $controller_class = "App\\Http\\Controllers\\" . $middleware . "\\" . ucfirst($route->service_group) . "\\{$route->controller_name}";
+        $controller_name_parts = explode('\\', $controller_class);
+        $last_part = end($controller_name_parts);
+        $controller_class = str_replace($last_part, ucfirst($last_part), $controller_class);
 
         if (!class_exists($controller_class)) {
             Log::warning("Controller class not found: {$controller_class}");

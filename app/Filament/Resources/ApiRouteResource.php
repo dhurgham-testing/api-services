@@ -63,10 +63,11 @@ class ApiRouteResource extends Resource
                             : app_path("Http/Controllers/" . ucfirst($middleware) . "/" . ucfirst($service_group));
 
                         if (is_dir($base_path)) {
-                            $files = glob($base_path . "/*Controller.php");
+                            $files = glob($base_path . "/*.php");
                             foreach ($files as $file) {
                                 $filename = basename($file, '.php');
-                                $controllers[$filename] = $filename;
+
+                                $controllers[ucfirst($filename)] = ucfirst($filename);
                             }
                         }
 
@@ -99,6 +100,9 @@ class ApiRouteResource extends Resource
                         }
 
                         $controller_class = $service_group == "/" ? "App\\Http\\Controllers\\" . $middleware . "\\{$controller_name}" : "App\\Http\\Controllers\\" . $middleware ."\\" . ucfirst($service_group) . "\\{$controller_name}";
+                        $controller_name_parts = explode('\\', $controller_class);
+                        $last_part = end($controller_name_parts);
+                        $controller_class = str_replace($last_part, ucfirst($last_part), $controller_class);
                         if (!class_exists($controller_class)) {
                             return [];
                         }
